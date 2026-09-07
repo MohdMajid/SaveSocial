@@ -1,0 +1,1 @@
+V4: inspect actual exposed formats before selecting; avoids brittle 'best' selectors; supports combined streams without FFmpeg and separate streams with FFmpeg.

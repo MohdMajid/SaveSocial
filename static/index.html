@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Social Media Downloader | Instagram, Facebook, YouTube</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="platform-all">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <div class="app-container">
+    <main class="card">
+      
+      <!-- Top Platform Navigation Tabs (YouTube, Instagram, Facebook, All-in-One) -->
+      <nav class="platform-nav" aria-label="Platform Selector">
+        <button type="button" class="nav-tab active" data-platform="all">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <span>All-in-One</span>
+        </button>
+        <button type="button" class="nav-tab" data-platform="instagram">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          <span>Instagram</span>
+        </button>
+        <button type="button" class="nav-tab" data-platform="facebook">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          <span>Facebook</span>
+        </button>
+        <button type="button" class="nav-tab" data-platform="youtube">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#06110e"/></svg>
+          <span>YouTube</span>
+        </button>
+      </nav>
+
+      <div class="header-section">
+        <div class="header-badge" id="headerBadge">
+          <span class="badge-dot"></span> <span id="badgeText">FAST • FREE • FULL HD QUALITY</span>
+        </div>
+        <h1 id="mainTitle">Social Media Downloader</h1>
+        <p class="sub" id="mainSub">Download Instagram Reels, Stories, Posts & Profiles, Facebook Videos & Pages, and YouTube videos directly from link.</p>
+      </div>
+
+      <!-- URL Form with Paste button -->
+      <form id="form" class="url-form">
+        <div class="inputrow">
+          <div class="input-wrapper">
+            <svg class="input-icon" id="inputIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <input id="url" name="url" type="url" placeholder="Paste link from Instagram, Facebook, or YouTube here..." autocomplete="off" required>
+            <button id="pasteBtn" type="button" class="btn-paste" title="Paste link from clipboard">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              <span>Paste</span>
+            </button>
+          </div>
+          <button id="infoBtn" type="submit">
+            <span class="btn-text">Fetch Media</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Feature Pill Badges -->
+      <div class="feature-pills" id="featurePills">
+        <span class="pill">⚡ 1-Click Fast Download</span>
+        <span class="pill">📸 Reels, Stories & Posts</span>
+        <span class="pill">👤 Profile & Page Feeds</span>
+        <span class="pill">🎬 HD 1080p / 4K</span>
+      </div>
+
+      <!-- Status / Alert Box -->
+      <div id="status" class="status hidden"></div>
+
+      <!-- Single Video / Media Preview & Download Card -->
+      <section id="preview" class="preview hidden">
+        <div class="thumb-container">
+          <img id="thumb" alt="Media Preview" src="">
+          <span id="durationBadge" class="duration-badge">--:--</span>
+          <span id="platformTagBadge" class="platform-tag">Instagram</span>
+          <button id="playOverlayBtn" type="button" class="play-overlay" title="Preview media">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="meta">
+          <div class="meta-header">
+            <h2 id="title">Media Title</h2>
+            <p id="uploader" class="channel-name">@creator</p>
+          </div>
+
+          <div class="actions-row">
+            <button id="previewBtn" type="button" class="btn-secondary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              ▶ Preview / Play
+            </button>
+            <button id="copyDirectLinkBtn" type="button" class="btn-secondary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Link
+            </button>
+          </div>
+
+          <div class="quality-select-wrapper">
+            <label for="quality" class="input-label">Select Download Option</label>
+            <div class="controls">
+              <select id="quality" aria-label="Available Qualities">
+                <option value="best">Best Quality</option>
+              </select>
+              <button id="directDownloadBtn" type="button" class="btn-primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile & Feed Posts Section (When pasting Instagram / Facebook Profile URL) -->
+      <section id="profileSection" class="profile-section hidden">
+        <div class="profile-header-card">
+          <div class="profile-avatar-wrapper">
+            <img id="profileAvatar" alt="Profile Avatar" src="">
+          </div>
+          <div class="profile-details">
+            <div class="profile-title-row">
+              <h3 id="profileName">Profile Name</h3>
+              <span id="profilePlatformBadge" class="platform-tag">Instagram</span>
+            </div>
+            <p id="profileHandle" class="profile-handle">@username</p>
+            <span id="profileCountBadge" class="count-badge">0 posts found</span>
+          </div>
+          <a id="profileExternalBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary profile-open-link">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            Open Profile
+          </a>
+        </div>
+        
+        <div class="profile-posts-grid" id="profilePostsGrid">
+          <!-- Dynamically populated profile posts/stories -->
+        </div>
+      </section>
+
+      <!-- Carousel / Multi-Item Post Section (For Instagram Carousel Posts) -->
+      <section id="carouselSection" class="carousel-section hidden">
+        <div class="carousel-header">
+          <div class="carousel-title-row">
+            <h3 id="carouselTitle">Instagram Multi-Item Post</h3>
+            <span id="carouselCountBadge" class="count-badge">0 items</span>
+          </div>
+          <p id="carouselUploader" class="carousel-uploader">@creator</p>
+        </div>
+        <div class="carousel-grid" id="carouselGrid">
+          <!-- Dynamically populated carousel items -->
+        </div>
+      </section>
+
+      <!-- Live Download Progress Section -->
+      <section id="progressSection" class="progress-section hidden">
+        <div class="progress-header">
+          <div class="progress-title-row">
+            <span id="progressStage" class="progress-stage">Preparing download...</span>
+            <span id="progressPct" class="progress-pct">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="progress-stats">
+          <div class="stat-item">
+            <span class="stat-label">Speed</span>
+            <span id="statSpeed" class="stat-value">--</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Size</span>
+            <span id="statSize" class="stat-value">--</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ETA</span>
+            <span id="statEta" class="stat-value">--</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Download Complete / Success Card -->
+      <section id="successCard" class="success-card hidden">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="success-content">
+          <h3>Download completed successfully!</h3>
+          <p class="file-name-display"><strong>File:</strong> <span id="savedFileName">media.mp4</span></p>
+          <p class="file-path-display"><strong>Location:</strong> <span id="savedLocation">downloads/</span></p>
+          <div class="success-actions">
+            <button id="openFolderBtn" type="button" class="btn-secondary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              Open Folder
+            </button>
+            <button id="downloadAnotherBtn" type="button" class="btn-primary">
+              Download Another
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Social Media Connect Section ("Connect with Social Media") -->
+      <section class="connect-card">
+        <div class="connect-header">
+          <div class="connect-icon-circle">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          </div>
+          <div class="connect-info">
+            <h3>Connect with Me...</h3>
+            <p>Connect karne ke liye yahan social media profiles par jud sakte hain</p>
+          </div>
+        </div>
+
+        <div class="social-links-grid">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link-btn ig-link">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <div class="social-btn-text">
+              <span class="social-name">Instagram</span>
+              <span class="social-handle">@crazy__boy__2444444</span>
+            </div>
+            <svg class="external-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link-btn fb-link">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            <div class="social-btn-text">
+              <span class="social-name">Facebook</span>
+              <span class="social-handle">xxxxxx</span>
+            </div>
+            <svg class="external-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-link-btn yt-link">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#06110e"/></svg>
+            <div class="social-btn-text">
+              <span class="social-name">YouTube</span>
+              <span class="social-handle">@MM.techno</span>
+            </div>
+            <svg class="external-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+        </div>
+      </section>
+
+      <p class="note">Authorized and personal use only. Respect creator rights and platform guidelines.</p>
+    </main>
+
+    <!-- Page Footer -->
+    <footer class="app-footer">
+      <p class="footer-credit">Devloped by Mohd Majid</p>
+    </footer>
+  </div>
+
+  <!-- Media Preview Modal Dialog -->
+  <div id="previewModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Media Preview</h3>
+        <button id="modalCloseBtn" type="button" class="modal-close" aria-label="Close Preview">&times;</button>
+      </div>
+      <div class="video-embed-wrapper">
+        <video id="previewVideo" class="preview-video-player" controls autoplay playsinline></video>
+        <img id="previewModalImg" class="preview-modal-image hidden" alt="Full Image Preview" src="">
+        <iframe id="previewIframe" class="hidden" src="" title="Media Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+      <div class="modal-footer">
+        <a id="modalExternalLinkBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary modal-external-link">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Open Original Post
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

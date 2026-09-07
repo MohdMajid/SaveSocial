@@ -1,0 +1,27 @@
+# Virtual Environment (650+ MB)
+.venv/
+venv/
+env/
+
+# Binaries (500+ MB - ffmpeg, deno exe files)
+bin/
+*.exe
+*.dll
+
+# Python cache & build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Downloaded media files
+downloads/
+*.mp4
+*.mp3
+*.jpg
+*.png
+*.webm
+
+# OS files
+.DS_Store
+Thumbs.db
