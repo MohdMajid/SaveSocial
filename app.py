@@ -18,8 +18,15 @@ import yt_dlp
 import requests
 
 BASE_DIR = Path(__file__).resolve().parent
-DOWNLOAD_DIR = BASE_DIR / "downloads"
-DOWNLOAD_DIR.mkdir(exist_ok=True)
+STATIC_DIR = BASE_DIR / "static"
+
+# Handle Serverless (Vercel) where root filesystem is read-only except /tmp
+if os.environ.get("VERCEL") or not os.access(BASE_DIR, os.W_OK):
+    DOWNLOAD_DIR = Path("/tmp/downloads")
+else:
+    DOWNLOAD_DIR = BASE_DIR / "downloads"
+
+DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # In-memory store for background download jobs
 JOBS: Dict[str, Dict[str, Any]] = {}
@@ -99,7 +106,7 @@ def setup_environment():
 setup_environment()
 
 app = FastAPI(title="Social Media Video Downloader - Developed by Mohd Majid")
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 def detect_platform(url: str) -> str:
     """Detect platform from URL."""
@@ -395,7 +402,7 @@ def clean_error_message(error_str: str, platform: str = "generic") -> str:
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return (BASE_DIR / "static" / "index.html").read_text(encoding="utf-8")
+    return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
 
 @app.post("/api/info")
 def fetch_info(url: str = Form(...)):
