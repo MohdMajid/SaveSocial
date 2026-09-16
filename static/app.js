@@ -6,12 +6,13 @@
 // Detect if running inside Capacitor (Android/iOS)
 const IS_CAPACITOR = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
-// Dynamic Backend API Base URL
+// Live Render Backend API Base URL
+const LIVE_BACKEND_URL = "https://savesocial-yamg.onrender.com";
+
 function getApiBase() {
   const saved = localStorage.getItem("ss_api_base");
   if (saved && saved.trim()) return saved.trim().replace(/\/+$/, "");
-  if (IS_CAPACITOR) return "http://192.168.1.3:8000";
-  return "";
+  return LIVE_BACKEND_URL;
 }
 
 // ── Platform Configurations (YouTube removed) ──────────────
@@ -694,42 +695,207 @@ function renderCarousel(data) {
   carouselSection.classList.remove("hidden");
 }
 
-// ── Trigger Download ──────────────────────────────────────────
-function triggerDirectDownload(url, quality = "best", title = "", directUrl = "", ext = "") {
+// ── Trigger Download (100% In-App Download) ───────────────────
+async function triggerDirectDownload(url, quality = "best", title = "", directUrl = "", ext = "") {
   showStatus("");
   hapticFeedback("medium");
+
+  const finalTitle = title || currentTitleText || "SaveSocial_Media";
+  const fileExt = ext || (currentMediaType === "image" ? "jpg" : "mp4");
+  const cleanFileName = `${finalTitle.replace(/[^a-zA-Z0-9_\-\s]/g, "").trim().replace(/\s+/g, "_")}.${fileExt}`;
 
   const params = new URLSearchParams({
     url:     url,
     quality: quality,
-    title:   title || currentTitleText || "Media",
+    title:   finalTitle,
   });
   if (directUrl) params.append("direct_url", directUrl);
-  if (ext)       params.append("ext", ext);
+  if (fileExt)   params.append("ext", fileExt);
 
   const downloadEndpoint = `${getApiBase()}/api/download/direct?${params.toString()}`;
 
-  const a = document.createElement("a");
-  a.href = downloadEndpoint;
-  a.setAttribute("download", "");
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // Reset & Show In-App Progress UI
+  if (progressSection) progressSection.classList.remove("hidden");
+  if (successCard) successCard.classList.add("hidden");
+  if (progressStage) progressStage.textContent = "Connecting to SaveSocial...";
+  if (progressPct) progressPct.textContent = "0%";
+  if (progressBarFill) progressBarFill.style.width = "0%";
 
-  const finalTitle = title || currentTitleText || "Media";
-  showStatus("Download started! Check your downloads.", false);
+  try {
+    // 1. Native Capacitor Filesystem download if the plugin is available (no IS_CAPACITOR guard)
+    if (window.Capacitor?.Plugins?.Filesystem) {
+      const { Filesystem, Directory } = window.Capacitor.Plugins;
+      // Request write permissions for the Downloads directory on Android
+      try {
+        if (Filesystem.requestPermissions) {
+          await Filesystem.requestPermissions({ directory: Directory.Downloads });
+        }
+      } catch (permErr) {
+        console.warn('Filesystem permission request failed', permErr);
+      }
+      try {
+        if (progressStage) progressStage.textContent = "Downloading directly in app...";
+        if (progressBarFill) progressBarFill.style.width = "50%";
+        if (progressPct) progressPct.textContent = "50%";
 
-  // Save to history
-  addToHistory({
-    title:     finalTitle,
-    url:       url,
-    platform:  activePlatform,
-    ext:       ext || "mp4",
-    date:      new Date().toISOString(),
-    thumbnail: thumbImg.src || "",
-  });
+        const res = await Filesystem.downloadFile({
+          url: downloadEndpoint,
+          path: `SaveSocial/${cleanFileName}`,
+          directory: Directory.Downloads,
+          recursive: true,
+        });
 
-  sendDownloadNotification(finalTitle);
+        // UI updates on success
+        if (progressBarFill) progressBarFill.style.width = "100%";
+        if (progressPct) progressPct.textContent = "100%";
+        if (progressStage) progressStage.textContent = "Saved to Downloads!";
+
+        if (savedFileName) savedFileName.textContent = cleanFileName;
+        if (savedLocation) savedLocation.textContent = "Downloads/SaveSocial";
+        if (successCard) successCard.classList.remove("hidden");
+
+        addToHistory({
+          title: finalTitle,
+          url: url,
+          platform: activePlatform,
+          ext: fileExt,
+          date: new Date().toISOString(),
+          thumbnail: thumbImg ? thumbImg.src : "",
+        });
+        sendDownloadNotification(finalTitle);
+        hapticFeedback("heavy");
+        return;
+      } catch (fsErr) {
+        console.warn("Capacitor Filesystem download failed, fallback to streaming", fsErr);
+      }
+    }
+
+    // 2. Fetch as Blob inside App (fallback to Capacitor APIs)
+    if (progressStage) progressStage.textContent = "Downloading media stream...";
+    const response = await fetch(downloadEndpoint);
+    if (!response.ok) throw new Error("Download request failed from server.");
+
+    const reader = response.body.getReader();
+    const contentLength = +response.headers.get('Content-Length') || 0;
+    let receivedLength = 0;
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      receivedLength += value.length;
+
+      if (contentLength > 0) {
+        const pct = Math.round((receivedLength / contentLength) * 100);
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressBarFill) progressBarFill.style.width = `${pct}%`;
+        if (progressStage) progressStage.textContent = `Downloading (${(receivedLength / (1024 * 1024)).toFixed(1)} MB)...`;
+      } else {
+        if (progressStage) progressStage.textContent = `Downloaded ${(receivedLength / (1024 * 1024)).toFixed(1)} MB...`;
+      }
+    }
+
+    const blob = new Blob(chunks);
+    // Try Capacitor Filesystem writeFile (base64) if available
+    if (IS_CAPACITOR && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+      const { Filesystem, Directory } = window.Capacitor.Plugins;
+      try {
+        const arrayBuffer = await blob.arrayBuffer();
+        const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        await Filesystem.writeFile({
+          path: `SaveSocial/${cleanFileName}`,
+          data: base64Data,
+          directory: Directory.Downloads,
+          encoding: 'base64',
+          recursive: true,
+        });
+        if (progressBarFill) progressBarFill.style.width = "100%";
+        if (progressPct) progressPct.textContent = "100%";
+        if (progressStage) progressStage.textContent = "Saved to Downloads!";
+        if (savedFileName) savedFileName.textContent = cleanFileName;
+        if (savedLocation) savedLocation.textContent = "Downloads/SaveSocial";
+        if (successCard) successCard.classList.remove("hidden");
+        addToHistory({
+          title: finalTitle,
+          url: url,
+          platform: activePlatform,
+          ext: fileExt,
+          date: new Date().toISOString(),
+          thumbnail: thumbImg ? thumbImg.src : "",
+        });
+        sendDownloadNotification(finalTitle);
+        hapticFeedback("heavy");
+        return;
+      } catch (fsWriteErr) {
+        console.warn("Capacitor Filesystem writeFile failed, falling back to Browser", fsWriteErr);
+      }
+    }
+    // Fallback: open Blob URL with Capacitor Browser (stays in‑app) or anchor as last resort
+    const blobUrl = URL.createObjectURL(blob);
+    if (IS_CAPACITOR && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+      try {
+        await window.Capacitor.Plugins.Browser.open({ url: blobUrl });
+      } catch (browserErr) {
+        console.warn("Capacitor Browser open failed, using anchor fallback", browserErr);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = cleanFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } else {
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = cleanFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    // Update UI after fallback download
+    if (progressPct) progressPct.textContent = "100%";
+    if (progressBarFill) progressBarFill.style.width = "100%";
+    if (progressStage) progressStage.textContent = "Download Complete!";
+    if (savedFileName) savedFileName.textContent = cleanFileName;
+    if (savedLocation) savedLocation.textContent = "Downloads Folder";
+    if (successCard) successCard.classList.remove("hidden");
+    addToHistory({
+      title: finalTitle,
+      url: url,
+      platform: activePlatform,
+      ext: fileExt,
+      date: new Date().toISOString(),
+      thumbnail: thumbImg ? thumbImg.src : "",
+    });
+    sendDownloadNotification(finalTitle);
+    hapticFeedback("heavy");
+
+    if (progressPct) progressPct.textContent = "100%";
+    if (progressBarFill) progressBarFill.style.width = "100%";
+    if (progressStage) progressStage.textContent = "Download Complete!";
+
+    if (savedFileName) savedFileName.textContent = cleanFileName;
+    if (savedLocation) savedLocation.textContent = "Downloads Folder";
+    if (successCard) successCard.classList.remove("hidden");
+
+    addToHistory({
+      title: finalTitle,
+      url: url,
+      platform: activePlatform,
+      ext: fileExt,
+      date: new Date().toISOString(),
+      thumbnail: thumbImg ? thumbImg.src : ""
+    });
+
+    sendDownloadNotification(finalTitle);
+    hapticFeedback("heavy");
+
+  } catch (err) {
+    if (progressSection) progressSection.classList.add("hidden");
+    showStatus("Download failed: " + err.message, true);
+  }
 }
 
 // ── Direct Download Button ────────────────────────────────────

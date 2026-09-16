@@ -460,6 +460,47 @@ def get_css():
 def get_js():
     return FileResponse(STATIC_DIR / "app.js", media_type="application/javascript")
 
+@app.get("/manifest.json")
+def get_manifest():
+    f = STATIC_DIR / "manifest.json"
+    if f.is_file():
+        return FileResponse(f, media_type="application/manifest+json")
+    return JSONResponse({"name": "SaveSocial"})
+
+@app.get("/sw.js")
+def get_sw():
+    f = STATIC_DIR / "sw.js"
+    if f.is_file():
+        return FileResponse(f, media_type="application/javascript")
+    return JSONResponse({})
+
+@app.get("/icon-192.png")
+def get_icon192():
+    f = STATIC_DIR / "icon-192.png"
+    if f.is_file():
+        return FileResponse(f, media_type="image/png")
+    return FileResponse(STATIC_DIR / "favicon.png", media_type="image/png") if (STATIC_DIR / "favicon.png").is_file() else JSONResponse({})
+
+@app.get("/favicon.png")
+def get_favicon_png():
+    for name in ["favicon.png", "icon-192.png"]:
+        f = STATIC_DIR / name
+        if f.is_file():
+            return FileResponse(f, media_type="image/png")
+    return JSONResponse({})
+
+@app.get("/favicon.ico")
+def get_favicon_ico():
+    for name in ["favicon.ico", "favicon.png", "icon-192.png"]:
+        f = STATIC_DIR / name
+        if f.is_file():
+            return FileResponse(f, media_type="image/x-icon")
+    return JSONResponse({})
+
+@app.get("/.well-known/{path:path}")
+def well_known(path: str):
+    return JSONResponse({})
+
 @app.post("/api/info")
 def fetch_info(url: str = Form(...)):
     """

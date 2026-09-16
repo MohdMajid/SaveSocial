@@ -8,6 +8,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>SaveSocial | Instagram & Facebook Downloader</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -179,45 +183,7 @@
           <div class="carousel-grid" id="carouselGrid"></div>
         </section>
 
-        <!-- Live Download Progress Section -->
-        <section id="progressSection" class="progress-section hidden">
-          <div class="progress-header">
-            <div class="progress-title-row">
-              <span id="progressStage" class="progress-stage">Preparing download...</span>
-              <span id="progressPct" class="progress-pct">0%</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div id="progressBarFill" class="progress-bar-fill" style="width: 0%"></div>
-            </div>
-          </div>
-          <div class="progress-stats">
-            <div class="stat-item">
-              <span class="stat-label">Speed</span>
-              <span id="statSpeed" class="stat-value">--</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Size</span>
-              <span id="statSize" class="stat-value">--</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">ETA</span>
-              <span id="statEta" class="stat-value">--</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Download Complete / Success Card -->
-        <section id="successCard" class="success-card hidden">
-          <div class="success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-          <div class="success-content">
-            <h3>Download completed!</h3>
-            <p class="file-name-display"><strong>File:</strong> <span id="savedFileName">media.mp4</span></p>
-            <p class="file-path-display"><strong>Location:</strong> <span id="savedLocation">downloads/</span></p>
-            <div class="success-actions">
+        <!-- Download UI moved to Download page -->
               <button id="openFolderBtn" type="button" class="btn-secondary">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                 Open File
