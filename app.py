@@ -14,6 +14,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from fastapi import FastAPI, Form, HTTPException, Request, Query
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import yt_dlp
 import requests
 
@@ -106,6 +107,15 @@ def setup_environment():
 setup_environment()
 
 app = FastAPI(title="Social Media Video Downloader - Developed by Mohd Majid")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 def detect_platform(url: str) -> str:
@@ -345,6 +355,35 @@ def get_unique_filepath(directory: Path, base_title: str, extension: str) -> Pat
             return target
         counter += 1
 
+def get_cookie_file() -> Optional[str]:
+    """Check for cookies.txt in root/tmp or generate from YOUTUBE_COOKIES env var."""
+    candidates = [
+        BASE_DIR / "cookies.txt",
+        DOWNLOAD_DIR / "cookies.txt",
+        Path("/tmp/cookies.txt"),
+    ]
+    for c in candidates:
+        if c.is_file() and c.stat().st_size > 0:
+            return str(c)
+
+    env_cookies = os.environ.get("YOUTUBE_COOKIES", "").strip()
+    if env_cookies:
+        try:
+            import base64
+            if not env_cookies.startswith("# Netscape") and len(env_cookies) > 50:
+                try:
+                    decoded = base64.b64decode(env_cookies).decode("utf-8")
+                    if "# Netscape" in decoded or "\t" in decoded:
+                        env_cookies = decoded
+                except Exception:
+                    pass
+            target = Path("/tmp/cookies.txt") if os.environ.get("VERCEL") else (BASE_DIR / "cookies.txt")
+            target.write_text(env_cookies, encoding="utf-8")
+            return str(target)
+        except Exception:
+            pass
+    return None
+
 def get_ydl_base_opts(platform: str = "generic") -> dict:
     """Common base options for yt-dlp tailored to platform."""
     ffmpeg_exe = get_ffmpeg_path()
@@ -354,10 +393,19 @@ def get_ydl_base_opts(platform: str = "generic") -> dict:
         "nocheckcertificate": True,
         "user_agent": BROWSER_HEADERS["User-Agent"],
     }
+
+    cookie_file = get_cookie_file()
+    if cookie_file:
+        opts["cookiefile"] = cookie_file
+
+    proxy = os.environ.get("HTTP_PROXY") or os.environ.get("HTTPS_PROXY") or os.environ.get("PROXY_URL")
+    if proxy:
+        opts["proxy"] = proxy
+
     if platform == "youtube":
         opts["extractor_args"] = {
             "youtube": {
-                "player_client": ["tv_embedded", "web_embedded", "android", "ios", "mweb"]
+                "player_client": ["ios", "android", "mweb", "tv_embedded", "web_embedded"]
             }
         }
     elif platform == "facebook":
@@ -403,6 +451,14 @@ def clean_error_message(error_str: str, platform: str = "generic") -> str:
 @app.get("/", response_class=HTMLResponse)
 def home():
     return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+
+@app.get("/style.css")
+def get_css():
+    return FileResponse(STATIC_DIR / "style.css", media_type="text/css")
+
+@app.get("/app.js")
+def get_js():
+    return FileResponse(STATIC_DIR / "app.js", media_type="application/javascript")
 
 @app.post("/api/info")
 def fetch_info(url: str = Form(...)):
@@ -950,8 +1006,14 @@ def direct_download(
         "-o", "-",
         resolved_url,
     ]
+    cookie_file = get_cookie_file()
+    if cookie_file:
+        cmd.extend(["--cookies", cookie_file])
+    proxy = os.environ.get("HTTP_PROXY") or os.environ.get("HTTPS_PROXY") or os.environ.get("PROXY_URL")
+    if proxy:
+        cmd.extend(["--proxy", proxy])
     if platform == "youtube":
-        cmd.extend(["--extractor-args", "youtube:player_client=web_embedded,android,ios,mweb"])
+        cmd.extend(["--extractor-args", "youtube:player_client=ios,android,mweb,web_embedded"])
 
     def stream_generator():
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=512 * 1024)
@@ -1009,6 +1071,7 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print("  🚀 Social Media Video Downloader Starting...")
     print("  ⭐ Developed by Mohd Majid")
-    print("  🌐 URL: http://127.0.0.1:8000")
+    print("  🌐 Local:   http://127.0.0.1:8000")
+    print("  📱 Network: http://192.168.1.3:8000 (Use this in SaveSocial mobile app)")
     print("="*60 + "\n")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

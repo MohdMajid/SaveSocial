@@ -25,3 +25,15 @@ downloads/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Sensitive / Credentials
+cookies.txt
+*.cookies
+.env
+node_modules/
+.env
+downloads/
+__pycache__/
+*.pyc
+.idea/
+*.apk
