@@ -334,27 +334,15 @@
             </label>
           </div>
 
-          <div class="settings-item">
+          <div class="settings-item settings-item-action" id="downloadLocBtn">
             <div class="settings-item-info">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
               <div>
                 <span>Download Location</span>
-                <small>Save to Downloads folder</small>
+                <small>Internal Storage / Downloads</small>
               </div>
             </div>
             <span class="settings-badge">Downloads</span>
-          </div>
-
-          <!-- Server Connection -->
-          <div class="settings-section-title">Server Connection</div>
-          <div class="settings-item">
-            <div class="settings-item-info">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-              <div style="flex:1">
-                <span>Backend API URL</span>
-                <input type="url" id="serverUrlSetting" placeholder="e.g. http://192.168.1.5:8000" style="width:100%;margin-top:6px;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-main);font-size:12px;outline:none;">
-              </div>
-            </div>
           </div>
 
           <!-- Data -->
@@ -371,7 +359,7 @@
           </div>
 
           <!-- About -->
-          <div class="settings-section-title">About</div>
+          <div class="settings-section-title">About & Legal</div>
           <div class="settings-item">
             <div class="settings-item-info">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -382,7 +370,7 @@
             </div>
             <span class="settings-badge">v1.0.0</span>
           </div>
-          <div class="settings-item">
+          <div class="settings-item settings-item-action" id="privacyBtn">
             <div class="settings-item-info">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
               <div>
@@ -392,7 +380,7 @@
             </div>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </div>
-          <div class="settings-item">
+          <div class="settings-item settings-item-action" id="termsBtn">
             <div class="settings-item-info">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
               <div>
@@ -462,6 +450,18 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           Open Original Post
         </a>
+      </div>
+  <!-- Info / Text Modal Dialog -->
+  <div id="infoModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+    <div class="modal-backdrop" id="infoModalBackdrop"></div>
+    <div class="modal-card" style="max-height:85vh">
+      <div class="modal-header">
+        <h3 id="infoModalTitle" class="modal-title">Information</h3>
+        <button id="infoModalCloseBtn" type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div id="infoModalBody" class="info-modal-body" style="padding:20px;overflow-y:auto;font-size:13.5px;line-height:1.6;color:var(--text-muted);"></div>
+      <div class="modal-footer">
+        <button id="infoModalOkBtn" type="button" class="btn-primary" style="width:auto;min-height:38px;padding:0 20px;">Got it</button>
       </div>
     </div>
   </div>

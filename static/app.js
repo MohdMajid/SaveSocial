@@ -3,15 +3,16 @@
 //  © 2026 SaveSocial. Designed & Developed by Mohd Majid.
 // ============================================================
 
+// Detect if running inside Capacitor (Android/iOS)
+const IS_CAPACITOR = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
 // Dynamic Backend API Base URL
 function getApiBase() {
   const saved = localStorage.getItem("ss_api_base");
   if (saved && saved.trim()) return saved.trim().replace(/\/+$/, "");
+  if (IS_CAPACITOR) return "http://192.168.1.3:8000";
   return "";
 }
-
-// Detect if running inside Capacitor (Android/iOS)
-const IS_CAPACITOR = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
 // ── Platform Configurations (YouTube removed) ──────────────
 const PLATFORM_CONFIG = {
@@ -112,12 +113,22 @@ const previewVideo       = document.getElementById("previewVideo");
 const previewModalImg    = document.getElementById("previewModalImg");
 const modalExternalLinkBtn = document.getElementById("modalExternalLinkBtn");
 
-const historyList          = document.getElementById("historyList");
-const clearHistoryBtn      = document.getElementById("clearHistoryBtn");
+const infoModal          = document.getElementById("infoModal");
+const infoModalBackdrop  = document.getElementById("infoModalBackdrop");
+const infoModalCloseBtn  = document.getElementById("infoModalCloseBtn");
+const infoModalTitle     = document.getElementById("infoModalTitle");
+const infoModalBody      = document.getElementById("infoModalBody");
+const infoModalOkBtn     = document.getElementById("infoModalOkBtn");
+
+const historyList        = document.getElementById("historyList");
+const clearHistoryBtn    = document.getElementById("clearHistoryBtn");
 const clearHistorySettingBtn = document.getElementById("clearHistorySettingBtn");
-const themeSetting         = document.getElementById("themeSetting");
-const notifSetting         = document.getElementById("notifSetting");
-const serverUrlSetting     = document.getElementById("serverUrlSetting");
+const themeSetting       = document.getElementById("themeSetting");
+const notifSetting       = document.getElementById("notifSetting");
+
+const downloadLocBtn     = document.getElementById("downloadLocBtn");
+const privacyBtn         = document.getElementById("privacyBtn");
+const termsBtn           = document.getElementById("termsBtn");
 
 // ── App State ─────────────────────────────────────────────────
 let activePlatform   = "all";
@@ -176,17 +187,69 @@ document.addEventListener("ionBackButton", (ev) => {
 function loadSettings() {
   const theme = localStorage.getItem("ss_theme") || "dark";
   const notif = localStorage.getItem("ss_notif") !== "false";
-  const apiBase = localStorage.getItem("ss_api_base") || "";
   if (themeSetting) themeSetting.value = theme;
   if (notifSetting) notifSetting.checked = notif;
-  if (serverUrlSetting) serverUrlSetting.value = apiBase;
   applyTheme(theme);
 }
 
-if (serverUrlSetting) {
-  serverUrlSetting.addEventListener("change", () => {
-    localStorage.setItem("ss_api_base", serverUrlSetting.value.trim());
-    showStatus("Server URL saved!", false);
+// ── Info Modal Dialog ─────────────────────────────────────────
+function openInfoModal(title, htmlContent) {
+  if (!infoModal) return;
+  infoModalTitle.textContent = title;
+  infoModalBody.innerHTML = htmlContent;
+  infoModal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeInfoModal() {
+  if (!infoModal) return;
+  infoModal.classList.add("hidden");
+  document.body.style.overflow = "";
+}
+
+if (infoModalCloseBtn) infoModalCloseBtn.addEventListener("click", closeInfoModal);
+if (infoModalOkBtn) infoModalOkBtn.addEventListener("click", closeInfoModal);
+if (infoModalBackdrop) infoModalBackdrop.addEventListener("click", closeInfoModal);
+
+if (downloadLocBtn) {
+  downloadLocBtn.addEventListener("click", () => {
+    openInfoModal(
+      "Download Location",
+      `<div style="display:flex;flex-direction:column;gap:12px;">
+        <p><strong>Folder Location:</strong></p>
+        <p style="background:rgba(255,255,255,0.06);padding:10px;border-radius:10px;font-family:monospace;word-break:break-all;">Downloads / SaveSocial</p>
+        <p>All downloaded Instagram Reels, Facebook Videos, TikTok Clips, and Audio files are saved directly to your phone's standard <strong>Downloads</strong> folder so you can open them anytime in your Gallery or File Manager.</p>
+       </div>`
+    );
+  });
+}
+
+if (privacyBtn) {
+  privacyBtn.addEventListener("click", () => {
+    openInfoModal(
+      "Privacy Policy",
+      `<div style="display:flex;flex-direction:column;gap:12px;">
+        <p><strong>Effective Date:</strong> September 2026</p>
+        <p><strong>1. Zero Data Collection:</strong> SaveSocial does NOT collect, track, or sell any personal user data. Your download history is stored locally on your device only.</p>
+        <p><strong>2. Direct Media Processing:</strong> Paste links are processed in real-time. We do not log or store the content you download.</p>
+        <p><strong>3. Permissions:</strong> SaveSocial requests only Storage and Notification permissions necessary for saving files and alerting you on download completion.</p>
+        <p><strong>4. Security:</strong> No user login credentials or account access are ever required or requested.</p>
+       </div>`
+    );
+  });
+}
+
+if (termsBtn) {
+  termsBtn.addEventListener("click", () => {
+    openInfoModal(
+      "Terms of Use",
+      `<div style="display:flex;flex-direction:column;gap:12px;">
+        <p><strong>1. Personal Use Only:</strong> SaveSocial is designed strictly for personal, educational, and authorized media downloading.</p>
+        <p><strong>2. Copyright & Intellectual Property:</strong> Respect content creators' rights. Do not re-upload, sell, or commercialize downloaded media without permission from the copyright owner.</p>
+        <p><strong>3. Third-Party Disclaimer:</strong> SaveSocial is an independent media utility tool and is not affiliated with or endorsed by Instagram, Facebook, TikTok, or Twitter.</p>
+        <p><strong>4. Fair Usage:</strong> Do not attempt to bypass DRM or access private account content without authorization.</p>
+       </div>`
+    );
   });
 }
 
@@ -462,7 +525,12 @@ async function fetchMedia() {
       body:    formData,
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseErr) {
+      throw new Error("Could not connect to backend server. Make sure Python server (start.bat) is running on your PC.");
+    }
     if (!data.ok) throw new Error(data.error || "Failed to fetch media details.");
 
     lastFetchedData   = data;
